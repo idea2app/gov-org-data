@@ -45,7 +45,22 @@ function spiderItem(url) {
                     const $ = cheerio.load(res.body)
                     const datas = []
                     $('li h4').each(function () {
-                        datas.push($(this).text());
+                        let orgName = $(this).text();
+                        orgName = orgName.replace(/(\（[^\)]*\）)/,'')
+                        if(orgName.indexOf('所属事业单位') != -1){
+                           return;
+                        }
+                        if(!(/^([^、，])*$/.test(orgName))){
+                            const names = (orgName.split('、').length > 1) ? orgName.split('、') : orgName.split('，');
+                            for(i in names){
+                                orgName = names[i];
+                            }
+                        } else {
+                            orgName = $(this).text();
+                        }
+                        orgName = orgName.replace(/(各)[0-9](人|名)/,'')
+                        orgName = orgName.replace(/[0-9](人|名)/,'')
+                        datas.push(orgName);
                     })
                     resolve(datas)
                 }
