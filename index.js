@@ -55,8 +55,6 @@ function spiderItem(url) {
                             for(i in names){
                                 orgName = names[i];
                             }
-                        } else {
-                            orgName = $(this).text();
                         }
                         orgName = orgName.replace(/(各)[0-9](人|名)/,'')
                         orgName = orgName.replace(/[0-9](人|名)/,'')
