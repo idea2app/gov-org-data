@@ -1,24 +1,35 @@
 {
-  "name": "institutions",
-  "version": "1.0.0",
-  "description": "",
-  "type": "module",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "array-unique-proposal": "^0.3.4",
-    "jsdom": "^22.1.0",
-    "yaml": "^2.3.2"
-  },
-  "devDependencies": {
-    "@types/jsdom": "^21.1.2"
-  },
-  "prettier": {
-    "tabWidth": 4,
-    "singleQuote": true
-  }
+    "name": "@idea2app/gov-org-data",
+    "version": "1.0.0",
+    "type": "module",
+    "source": "src/index.ts",
+    "bin": {
+        "gov-org-data": "dist/index.js"
+    },
+    "dependencies": {
+        "array-unique-proposal": "^0.3.4",
+        "jsdom": "^22.1.0",
+        "yaml": "^2.3.2"
+    },
+    "devDependencies": {
+        "@types/jsdom": "^21.1.2",
+        "husky": "^8.0.3",
+        "lint-staged": "^14.0.1",
+        "prettier": "^3.0.3",
+        "tsx": "^3.12.8",
+        "typescript": "^5.2.2"
+    },
+    "prettier": {
+        "tabWidth": 4,
+        "singleQuote": true
+    },
+    "lint-staged": {
+        "*.{md,json,yml,js,ts}": "prettier --write"
+    },
+    "scripts": {
+        "prepare": "husky install",
+        "crawl": "tsx index.ts",
+        "test": "lint-staged",
+        "build": "rm -rf dist/  &&  tsc"
+    }
 }

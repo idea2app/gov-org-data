@@ -15,6 +15,10 @@ const urls = [
 
 console.time(filePath);
 
+interface Job extends Record<'positions' | 'vacancies' | 'applicants', number> {
+    name: string;
+}
+
 const promiseList = urls.map(async (uri) => {
     const {
         window: { document },
@@ -24,13 +28,12 @@ const promiseList = urls.map(async (uri) => {
         .map(({ children }) => {
             const [name, counts] = [...children];
 
-            const orgName = name.textContent.trim().replace(/（.+?）/g, '');
-            const [positions, vacancies, applicants] = counts.textContent
-                .match(/\d+/g)
-                .map(Number);
+            const orgName = name.textContent?.trim().replace(/（.+?）/g, '');
+            const [positions, vacancies, applicants] =
+                counts.textContent?.match(/\d+/g)?.map(Number) || [];
 
             return (
-                !orgName.includes('所属事业单位') && {
+                !orgName?.includes('所属事业单位') && {
                     name: orgName,
                     positions,
                     vacancies,
@@ -38,12 +41,12 @@ const promiseList = urls.map(async (uri) => {
                 }
             );
         })
-        .filter(Boolean);
+        .filter(Boolean) as Job[];
 });
 
 const list = await Promise.all(promiseList);
 
-const data = list.flat(Infinity).uniqueBy('name');
+const data = (list.flat(Infinity) as Job[]).uniqueBy('name');
 
 const { ext } = parse(filePath);
 
@@ -56,7 +59,10 @@ const text =
         ? [
               Object.keys(data[0]) + '',
               ...data.map(
-                  (item) => Object.values(item).map(JSON.stringify) + ''
+                  (item) =>
+                      Object.values(item).map((value) =>
+                          JSON.stringify(value),
+                      ) + '',
               ),
           ].join('\n')
         : '';
