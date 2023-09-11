@@ -1,8 +1,10 @@
-const Crawler = require('crawler');
-const cheerio = require('cheerio');
-const { promises } = require('fs');
+import 'array-unique-proposal';
+import { promises } from 'fs';
+import { JSDOM } from 'jsdom';
+import { parse } from 'path';
+import { stringify } from 'yaml';
 
-const crawler = new Crawler({ maxConnections: 10 });
+const [filePath = 'data.json'] = process.argv.slice(2);
 
 // 所有爬虫链接
 const urls = [
@@ -11,40 +13,55 @@ const urls = [
     'https://sc.huatu.com/syzwb/2022/2/buweisearch/1.html',
 ];
 
+console.time(filePath);
+
 const promiseList = urls.map(async (uri) => {
-    var finish;
+    const {
+        window: { document },
+    } = await JSDOM.fromURL(uri);
 
-    const { body } = await new Promise((resolve, reject) =>
-        crawler.queue([
-            {
-                uri,
-                jQuery: true,
-                callback(error, res, done) {
-                    finish = done;
-                    error ? reject(error) : resolve(res);
-                },
-            },
-        ])
-    );
-    const $ = cheerio.load(body);
+    return [...document.querySelectorAll('.searchList > li > a')]
+        .map(({ children }) => {
+            const [name, counts] = [...children];
 
-    finish();
+            const orgName = name.textContent.trim().replace(/（.+?）/g, '');
+            const [positions, vacancies, applicants] = counts.textContent
+                .match(/\d+/g)
+                .map(Number);
 
-    return [...$('li h4')]
-        .map((item) => {
-            const orgName = $(item)
-                .text()
-                .replace(/（.+?）/g, '');
-
-            return !orgName.includes('所属事业单位') && orgName.split(/、|，/);
+            return (
+                !orgName.includes('所属事业单位') && {
+                    name: orgName,
+                    positions,
+                    vacancies,
+                    applicants,
+                }
+            );
         })
         .filter(Boolean);
 });
 
-Promise.all(promiseList).then(async (list) => {
-    var data = [...new Set(list.flat(Infinity))];
+const list = await Promise.all(promiseList);
 
-    await promises.writeFile('data.json', JSON.stringify(data));
+const data = list.flat(Infinity).uniqueBy('name');
 
-    console.log(data.length + '条记录，成功写入完成');
-});
+const { ext } = parse(filePath);
+
+const text =
+    ext === '.json'
+        ? JSON.stringify(data, null, 4)
+        : /^\.ya?ml$/.test(ext)
+        ? stringify(data)
+        : ext === '.csv'
+        ? [
+              Object.keys(data[0]) + '',
+              ...data.map(
+                  (item) => Object.values(item).map(JSON.stringify) + ''
+              ),
+          ].join('\n')
+        : '';
+
+await promises.writeFile(filePath, text);
+
+console.log(data.length + '条记录，成功写入完成');
+console.timeEnd(filePath);
