@@ -2,6 +2,7 @@
   "name": "institutions",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -9,9 +10,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "cheerio": "^1.0.0-rc.10",
-    "crawler": "^1.3.0",
-    "jsdom": "^19.0.0"
+    "array-unique-proposal": "^0.3.4",
+    "jsdom": "^22.1.0",
+    "yaml": "^2.3.2"
+  },
+  "devDependencies": {
+    "@types/jsdom": "^21.1.2"
   },
   "prettier": {
     "tabWidth": 4,
