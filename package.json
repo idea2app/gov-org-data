@@ -28,7 +28,7 @@
     },
     "scripts": {
         "prepare": "husky install",
-        "crawl": "tsx index.ts",
+        "crawl": "tsx ./src/index.ts",
         "test": "lint-staged",
         "build": "rm -rf dist/  &&  tsc"
     }
