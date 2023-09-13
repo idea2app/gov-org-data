@@ -3,17 +3,26 @@ import { promises } from 'fs';
 import { JSDOM } from 'jsdom';
 import { parse } from 'path';
 import { stringify } from 'yaml';
+import yargs from 'yargs';
 
-const [filePath = 'data.json'] = process.argv.slice(2);
+const argv = yargs(process.argv.slice(2))
+    .usage('Usage: $0[options]')
+    .options('urls', {
+        alias: 'u',
+        describe: 'A list of URLs to scrape',
+        type: 'array',
+        demandOption: true,
+    })
+    .option('output', {
+        alias: 'o',
+        describe: 'Output file path(e.g., data.json, data.yml, data.csv)',
+        type: 'string',
+        default: 'data.json',
+    }).argv;
 
-// 所有爬虫链接
-const urls = [
-    'https://sc.huatu.com/syzwb/2021/1/buweisearch/1.html',
-    'https://sc.huatu.com/syzwb/2021/8/buweisearch/1.html',
-    'https://sc.huatu.com/syzwb/2022/2/buweisearch/1.html',
-];
+const { urls, output } = argv;
 
-console.time(filePath);
+console.time(output);
 
 interface Job extends Record<'positions' | 'vacancies' | 'applicants', number> {
     name: string;
@@ -48,7 +57,7 @@ const list = await Promise.all(promiseList);
 
 const data = (list.flat(Infinity) as Job[]).uniqueBy('name');
 
-const { ext } = parse(filePath);
+const { ext } = parse(output);
 
 const text =
     ext === '.json'
@@ -67,7 +76,7 @@ const text =
           ].join('\n')
         : '';
 
-await promises.writeFile(filePath, text);
+await promises.writeFile(output, text);
 
 console.log(data.length + '条记录，成功写入完成');
-console.timeEnd(filePath);
+console.timeEnd(output);
