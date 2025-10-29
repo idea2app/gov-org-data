@@ -1,6 +1,6 @@
 {
     "name": "@idea2app/gov-org-data",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "type": "module",
     "source": "src/index.ts",
     "bin": {
@@ -8,27 +8,39 @@
     },
     "dependencies": {
         "array-unique-proposal": "^0.3.4",
-        "jsdom": "^22.1.0",
-        "yaml": "^2.3.2",
+        "fs-extra": "^11.3.2",
+        "jsdom": "^27.0.1",
+        "koajax": "^3.1.2",
+        "mobx-restful": "^2.1.4",
+        "mobx-restful-migrator": "^0.1.4",
+        "yaml": "^2.8.1",
         "yargs": "^17.7.2"
     },
     "devDependencies": {
-        "@types/jsdom": "^21.1.2",
-        "husky": "^8.0.3",
-        "lint-staged": "^14.0.1",
-        "prettier": "^3.0.3",
-        "tsx": "^3.12.8",
-        "typescript": "^5.2.2"
+        "@types/fs-extra": "^11.0.4",
+        "@types/jsdom": "^27.0.0",
+        "husky": "^9.1.7",
+        "lint-staged": "^16.2.6",
+        "prettier": "^3.6.2",
+        "tsx": "^4.20.6",
+        "typescript": "^5.9.3"
+    },
+    "pnpm": {
+        "onlyBuiltDependencies": [
+            "core-js",
+            "esbuild"
+        ]
     },
     "prettier": {
         "tabWidth": 4,
-        "singleQuote": true
+        "singleQuote": true,
+        "printWidth": 100
     },
     "lint-staged": {
         "*.{md,json,yml,js,ts}": "prettier --write"
     },
     "scripts": {
-        "prepare": "husky install",
+        "prepare": "husky",
         "crawl": "tsx src/",
         "test": "lint-staged",
         "build": "rm -rf dist/  &&  tsc"
