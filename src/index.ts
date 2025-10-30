@@ -24,9 +24,27 @@ const { urls, output } = argv;
 
 console.time(output);
 
-interface Job extends Record<'positions' | 'vacancies' | 'applicants', number> {
-    name: string;
+interface Job
+    extends Record<
+        'code' | 'name' | 'district' | 'department' | 'object' | 'age' | 'degree',
+        string
+    > {
+    positions: number;
+    majors: string[];
 }
+
+const HeaderMap = {
+    职位代码: 'code',
+    职位名称: 'name',
+    地区: 'district',
+    招考人数: 'positions',
+    招考对象: 'object',
+    年龄要求: 'age',
+    学历: 'education',
+    学位: 'degree',
+    专业: 'majors',
+    本科专业: 'majors',
+} as const;
 
 async function* dataSource(links: string[]): AsyncGenerator<Job> {
     for (const link of links) {
@@ -34,15 +52,46 @@ async function* dataSource(links: string[]): AsyncGenerator<Job> {
             window: { document },
         } = await JSDOM.fromURL(link);
 
-        for (const { children } of document.querySelectorAll('.searchList > li > a')) {
-            const [name, counts] = children;
+        for (const { href } of document.querySelectorAll<HTMLAnchorElement>(
+            '.searchList > li > a',
+        )) {
+            const {
+                window: { document },
+            } = await JSDOM.fromURL(href);
 
-            const orgName = name.textContent?.trim().replace(/（.+?）/g, '');
-            const [positions, vacancies, applicants] =
-                counts.textContent?.match(/\d+/g)?.map(Number) || [];
+            const { firstChild } = document.querySelector('.title02');
+            const department = firstChild.textContent.trim();
 
-            if (!orgName?.includes('所属事业单位'))
-                yield { name: orgName, positions, vacancies, applicants };
+            const headers = Array.from(
+                document.querySelectorAll('.pc_show thead th'),
+                ({ textContent }) => HeaderMap[textContent.trim() as keyof typeof HeaderMap],
+            );
+
+            for (const { cells } of document.querySelectorAll<HTMLTableRowElement>(
+                '.pc_show tbody tr',
+            )) {
+                const entries = Array.from(cells, ({ textContent }, index) => [
+                    headers[index],
+                    textContent.trim(),
+                ]);
+                const { district, name, code, positions, object, age, education, majors } =
+                    Object.fromEntries(entries) as Record<(typeof headers)[number], string>;
+                const majorList = majors
+                    .split(/[\s\d.:：；;]+|、|，|本科|研究生|硕士|博士/)
+                    .filter(Boolean);
+
+                yield {
+                    code,
+                    name,
+                    district,
+                    department,
+                    positions: +positions || 0,
+                    object,
+                    age,
+                    degree: education,
+                    majors: majorList,
+                };
+            }
         }
     }
 }
@@ -55,22 +104,27 @@ class TargetListModel extends YAMLListModel<Job> {
 }
 
 const crawler = new RestMigrator(dataSource, TargetListModel, {
+    code: 'code',
     name: 'name',
+    district: 'district',
+    department: 'department',
     positions: 'positions',
-    vacancies: 'vacancies',
-    applicants: 'applicants',
+    object: 'object',
+    age: 'age',
+    degree: 'degree',
+    majors: 'majors',
 });
+
+const stringifyCSV = (data: object[]) =>
+    [
+        Object.keys(data[0]) + '',
+        ...data.map((item) => Object.values(item).map((value) => JSON.stringify(value)) + ''),
+    ].join('\n');
 
 (async () => {
     const list = await Array.fromAsync(crawler.boot({ sourceOption: urls as string[] }));
 
     const data = list.uniqueBy('name');
-
-    const stringifyCSV = (data: object[]) =>
-        [
-            Object.keys(data[0]) + '',
-            ...data.map((item) => Object.values(item).map((value) => JSON.stringify(value)) + ''),
-        ].join('\n');
 
     switch (ext) {
         case '.json':
