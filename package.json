@@ -1,0 +1,45 @@
+{
+    "name": "@idea2app/gov-org-data",
+    "version": "2.0.0",
+    "description": "事业单位数据爬虫",
+    "source": "src/index.ts",
+    "bin": {
+        "gov-org-data": "dist/index.js"
+    },
+    "dependencies": {
+        "commander-jsx": "^0.7.0",
+        "fs-extra": "^11.3.2",
+        "jsdom": "^27.0.1",
+        "koajax": "^3.1.2",
+        "mobx-restful-migrator": "^0.2.1"
+    },
+    "devDependencies": {
+        "@types/fs-extra": "^11.0.4",
+        "@types/jsdom": "^27.0.0",
+        "husky": "^9.1.7",
+        "lint-staged": "^16.2.6",
+        "prettier": "^3.6.2",
+        "tsx": "^4.20.6",
+        "typescript": "^5.9.3"
+    },
+    "pnpm": {
+        "onlyBuiltDependencies": [
+            "core-js",
+            "esbuild"
+        ]
+    },
+    "prettier": {
+        "tabWidth": 4,
+        "singleQuote": true,
+        "printWidth": 100
+    },
+    "lint-staged": {
+        "*.{md,json,yml,js,ts}": "prettier --write"
+    },
+    "scripts": {
+        "prepare": "husky",
+        "crawl": "tsx src/",
+        "test": "lint-staged",
+        "build": "rm -rf dist/  &&  tsc"
+    }
+}
