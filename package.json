@@ -1,7 +1,6 @@
 {
     "name": "@idea2app/gov-org-data",
     "version": "2.0.0",
-    "type": "module",
     "source": "src/index.ts",
     "bin": {
         "gov-org-data": "dist/index.js"
@@ -12,8 +11,7 @@
         "jsdom": "^27.0.1",
         "koajax": "^3.1.2",
         "mobx-restful": "^2.1.4",
-        "mobx-restful-migrator": "^0.1.4",
-        "yaml": "^2.8.1",
+        "mobx-restful-migrator": "^0.2.1",
         "yargs": "^17.7.2"
     },
     "devDependencies": {

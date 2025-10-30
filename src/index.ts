@@ -1,8 +1,8 @@
 import 'array-unique-proposal';
-import { outputFile } from 'fs-extra';
+import { outputFile, outputJSON } from 'fs-extra';
 import { JSDOM } from 'jsdom';
-import { parse } from 'path';
-import { stringify } from 'yaml';
+import { RestMigrator, YAMLListModel } from 'mobx-restful-migrator';
+import { join, parse } from 'path';
 import yargs from 'yargs';
 
 const argv = yargs(process.argv.slice(2))
@@ -28,7 +28,7 @@ interface Job extends Record<'positions' | 'vacancies' | 'applicants', number> {
     name: string;
 }
 
-async function* loadList(links: string[]): AsyncGenerator<Job> {
+async function* dataSource(links: string[]): AsyncGenerator<Job> {
     for (const link of links) {
         const {
             window: { document },
@@ -46,28 +46,46 @@ async function* loadList(links: string[]): AsyncGenerator<Job> {
         }
     }
 }
-const list = await Array.fromAsync(loadList(urls as string[]));
+const { dir, name, ext } = parse(output);
 
-const data = list.uniqueBy('name');
+class TargetListModel extends YAMLListModel<Job> {
+    constructor() {
+        super(join(dir, name + (/\.ya?ml/.test(ext) ? ext : '.yml')));
+    }
+}
 
-const { ext } = parse(output);
+const crawler = new RestMigrator(dataSource, TargetListModel, {
+    name: 'name',
+    positions: 'positions',
+    vacancies: 'vacancies',
+    applicants: 'applicants',
+});
 
-const stringifyCSV = (data: object[]) =>
-    [
-        Object.keys(data[0]) + '',
-        ...data.map((item) => Object.values(item).map((value) => JSON.stringify(value)) + ''),
-    ].join('\n');
+(async () => {
+    const list = await Array.fromAsync(crawler.boot({ sourceOption: urls as string[] }));
 
-const text =
-    ext === '.json'
-        ? JSON.stringify(data, null, 4)
-        : /^\.ya?ml$/.test(ext)
-          ? stringify(data)
-          : ext === '.csv'
-            ? stringifyCSV(data)
-            : '';
+    const data = list.uniqueBy('name');
 
-await outputFile(output, text);
+    const stringifyCSV = (data: object[]) =>
+        [
+            Object.keys(data[0]) + '',
+            ...data.map((item) => Object.values(item).map((value) => JSON.stringify(value)) + ''),
+        ].join('\n');
 
-console.log(data.length + '条记录，成功写入完成');
-console.timeEnd(output);
+    switch (ext) {
+        case '.json':
+            await outputJSON(output, data, { spaces: 4 });
+            break;
+        case '.yml':
+        case '.yaml':
+            break;
+        case '.csv':
+            await outputFile(output, stringifyCSV(data));
+            break;
+        default:
+            throw new Error('Unsupported output file format: ' + ext);
+    }
+
+    console.log(data.length + '条记录，成功写入完成');
+    console.timeEnd(output);
+})();
