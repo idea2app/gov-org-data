@@ -1,28 +1,25 @@
-import 'array-unique-proposal';
 import { outputFile, outputJSON } from 'fs-extra';
 import { JSDOM } from 'jsdom';
 import { RestMigrator, YAMLListModel } from 'mobx-restful-migrator';
 import { join, parse } from 'path';
-import yargs from 'yargs';
+import { Command } from 'commander-jsx';
 
-const argv = yargs(process.argv.slice(2))
-    .usage('Usage: $0[options]')
-    .options('urls', {
-        alias: 'u',
-        describe: 'A list of URLs to scrape',
-        type: 'array',
-        demandOption: true,
-    })
-    .option('output', {
-        alias: 'o',
-        describe: 'Output file path(e.g., data.json, data.yml, data.csv)',
-        type: 'string',
-        default: 'data.json',
-    }).argv;
-
-const { urls, output } = argv;
-
-console.time(output);
+Command.execute(
+    <Command
+        name="gov-org-data"
+        description="事业单位数据爬虫"
+        version="2.0.0"
+        parameters="<URLs> [options]"
+        options={{
+            output: {
+                shortcut: 'o',
+                description: 'Output file path (e.g., data.json, data.yml, data.csv)',
+            },
+        }}
+        executor={({ output = 'data.json' }, ...urls: string[]) => main(urls, output as string)}
+    />,
+    process.argv.slice(2),
+);
 
 interface Job
     extends Record<
@@ -95,25 +92,6 @@ async function* dataSource(links: string[]): AsyncGenerator<Job> {
         }
     }
 }
-const { dir, name, ext } = parse(output);
-
-class TargetListModel extends YAMLListModel<Job> {
-    constructor() {
-        super(join(dir, name + (/\.ya?ml/.test(ext) ? ext : '.yml')));
-    }
-}
-
-const crawler = new RestMigrator(dataSource, TargetListModel, {
-    code: 'code',
-    name: 'name',
-    district: 'district',
-    department: 'department',
-    positions: 'positions',
-    object: 'object',
-    age: 'age',
-    degree: 'degree',
-    majors: 'majors',
-});
 
 const stringifyCSV = (data: object[]) =>
     [
@@ -121,25 +99,44 @@ const stringifyCSV = (data: object[]) =>
         ...data.map((item) => Object.values(item).map((value) => JSON.stringify(value)) + ''),
     ].join('\n');
 
-(async () => {
-    const list = await Array.fromAsync(crawler.boot({ sourceOption: urls as string[] }));
+async function main(urls: string[], output: string) {
+    console.time(output);
 
-    const data = list.uniqueBy('name');
+    const { dir, name, ext } = parse(output);
+
+    class TargetListModel extends YAMLListModel<Job> {
+        constructor() {
+            super(join(dir, name + (/\.ya?ml/.test(ext) ? ext : '.yml')));
+        }
+    }
+
+    const crawler = new RestMigrator(dataSource, TargetListModel, {
+        code: { code: { unique: true } },
+        name: 'name',
+        district: 'district',
+        department: 'department',
+        positions: 'positions',
+        object: 'object',
+        age: 'age',
+        degree: 'degree',
+        majors: 'majors',
+    });
+    const list = await Array.fromAsync(crawler.boot({ sourceOption: urls as string[] }));
 
     switch (ext) {
         case '.json':
-            await outputJSON(output, data, { spaces: 4 });
+            await outputJSON(output, list, { spaces: 4 });
             break;
         case '.yml':
         case '.yaml':
             break;
         case '.csv':
-            await outputFile(output, stringifyCSV(data));
+            await outputFile(output, stringifyCSV(list));
             break;
         default:
             throw new Error('Unsupported output file format: ' + ext);
     }
 
-    console.log(data.length + '条记录，成功写入完成');
+    console.log(list.length + '条记录，成功写入完成');
     console.timeEnd(output);
-})();
+}
