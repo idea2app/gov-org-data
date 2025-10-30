@@ -1,0 +1,45 @@
+name: Crawl Data
+
+on:
+    workflow_dispatch:
+        inputs:
+            links:
+                description: 'Data links to crawl (space-separated)'
+                type: string
+                required: true
+
+jobs:
+    crawl:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout Crawler Code
+              uses: actions/checkout@v4
+
+            - name: Checkout Existing Data
+              uses: actions/checkout@v4
+              with:
+                  ref: gh-pages
+                  path: public/
+
+            - uses: pnpm/action-setup@v4
+              with:
+                  version: 10
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: pnpm
+
+            - name: Install dependencies
+              run: pnpm i --frozen-lockfile
+
+            - name: Run crawler
+              run: pnpm crawl ${{ inputs.links }} -o public/job.json
+
+            - name: Deploy to GitHub pages
+              uses: peaceiris/actions-gh-pages@v4
+              with:
+                  publish_dir: ./public
+                  personal_token: ${{ github.token }}
+                  force_orphan: true
