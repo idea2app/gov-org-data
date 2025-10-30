@@ -3,8 +3,10 @@
         "target": "ES2022",
         "module": "CommonJS",
         "moduleResolution": "Node",
+        "jsx": "react-jsx",
+        "jsxImportSource": "commander-jsx",
         "lib": ["ESNext"],
         "outDir": "dist/"
     },
-    "include": ["**/*.ts"]
+    "include": ["src/**/*"]
 }

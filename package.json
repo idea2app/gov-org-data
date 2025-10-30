@@ -1,18 +1,17 @@
 {
     "name": "@idea2app/gov-org-data",
     "version": "2.0.0",
+    "description": "事业单位数据爬虫",
     "source": "src/index.ts",
     "bin": {
         "gov-org-data": "dist/index.js"
     },
     "dependencies": {
-        "array-unique-proposal": "^0.3.4",
+        "commander-jsx": "^0.7.0",
         "fs-extra": "^11.3.2",
         "jsdom": "^27.0.1",
         "koajax": "^3.1.2",
-        "mobx-restful": "^2.1.4",
-        "mobx-restful-migrator": "^0.2.1",
-        "yargs": "^17.7.2"
+        "mobx-restful-migrator": "^0.2.1"
     },
     "devDependencies": {
         "@types/fs-extra": "^11.0.4",
