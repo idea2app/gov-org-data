@@ -24,11 +24,8 @@ importers:
         specifier: ^2.1.4
         version: 2.1.4(jsdom@27.0.1)(mobx@6.15.0)(typescript@5.9.3)
       mobx-restful-migrator:
-        specifier: ^0.1.4
-        version: 0.1.4(jsdom@27.0.1)(typescript@5.9.3)
-      yaml:
-        specifier: ^2.8.1
-        version: 2.8.1
+        specifier: ^0.2.1
+        version: 0.2.1(jsdom@27.0.1)(typescript@5.9.3)
       yargs:
         specifier: ^17.7.2
         version: 17.7.2
@@ -496,8 +493,8 @@ packages:
     resolution: {integrity: sha512-VP79XUPxV2CigYP3jWwAUFSku2aKqBH7uTAapFWCBqutsbmDo96KY5o8uh6U+/YSIn5OxJnXp73beVkpqMIGhA==}
     engines: {node: '>=18'}
 
-  mobx-restful-migrator@0.1.4:
-    resolution: {integrity: sha512-JGZGIZLKYXDasJfVt0r7KzawoJpLEPn22OJyfehHt7yu6OVXdAJbRgrUsvqlXwEiJ2mhflFNpMOhpHAmIwm4vg==}
+  mobx-restful-migrator@0.2.1:
+    resolution: {integrity: sha512-6EW7FovkNAI1E42TKDBKoOWyCD2UBZ0DYbX4FUmP8Eq0DZFcKAjlMv63WdjdFLApDEc1FQlWDpDVszy7n4j3bA==}
     peerDependencies:
       core-js: '>=3'
 
@@ -1130,10 +1127,12 @@ snapshots:
 
   mimic-function@5.0.1: {}
 
-  mobx-restful-migrator@0.1.4(jsdom@27.0.1)(typescript@5.9.3):
+  mobx-restful-migrator@0.2.1(jsdom@27.0.1)(typescript@5.9.3):
     dependencies:
+      fs-extra: 11.3.2
       mobx: 6.15.0
       mobx-restful: 2.1.4(jsdom@27.0.1)(mobx@6.15.0)(typescript@5.9.3)
+      yaml: 2.8.1
     transitivePeerDependencies:
       - element-internals-polyfill
       - jsdom
