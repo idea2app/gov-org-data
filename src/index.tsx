@@ -3,6 +3,7 @@ import { JSDOM } from 'jsdom';
 import { RestMigrator, YAMLListModel } from 'mobx-restful-migrator';
 import { join, parse } from 'path';
 import { Command } from 'commander-jsx';
+import { stringifyTextTable } from 'web-utility';
 
 Command.execute(
     <Command
@@ -93,12 +94,6 @@ async function* dataSource(links: string[]): AsyncGenerator<Job> {
     }
 }
 
-const stringifyCSV = (data: object[]) =>
-    [
-        Object.keys(data[0]) + '',
-        ...data.map((item) => Object.values(item).map((value) => JSON.stringify(value)) + ''),
-    ].join('\n');
-
 async function main(urls: string[], output: string) {
     console.time(output);
 
@@ -131,7 +126,7 @@ async function main(urls: string[], output: string) {
         case '.yaml':
             break;
         case '.csv':
-            await outputFile(output, stringifyCSV(list));
+            await outputFile(output, stringifyTextTable(list));
             break;
         default:
             throw new Error('Unsupported output file format: ' + ext);

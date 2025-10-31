@@ -7,11 +7,12 @@
         "gov-org-data": "dist/index.js"
     },
     "dependencies": {
-        "commander-jsx": "^0.7.0",
+        "commander-jsx": "^0.7.1",
         "fs-extra": "^11.3.2",
-        "jsdom": "^27.0.1",
+        "jsdom": "^27.1.0",
         "koajax": "^3.1.2",
-        "mobx-restful-migrator": "^0.2.1"
+        "mobx-restful-migrator": "^0.2.1",
+        "web-utility": "^4.6.4"
     },
     "devDependencies": {
         "@types/fs-extra": "^11.0.4",
